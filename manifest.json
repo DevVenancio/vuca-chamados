@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "Vuca Chamados",
+  "version": "1.0.0",
+  "description": "Sidebar de chamados do CRM Vuca integrada ao Sendi.",
+  "minimum_chrome_version": "111",
+  "permissions": ["storage", "scripting"],
+  "host_permissions": [
+    "https://suportevuca.sendi.chat/*",
+    "https://crm.vucasolution.com.br/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Abrir Sendi",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://suportevuca.sendi.chat/*"],
+      "js": ["parser.js", "content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["sidebar.css"],
+      "matches": ["https://suportevuca.sendi.chat/*"]
+    }
+  ]
+}
