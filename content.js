@@ -4,6 +4,11 @@
   var ROOT_ID = 'vuca-chamados-root';
   var STORAGE_THEME = 'vcTheme';
   var STORAGE_OPEN = 'vcOpen';
+  var STORAGE_VIEW = 'vcView';
+  var STORAGE_UNITS = 'vcUnitsDb';
+  var VIEWS = ['tickets', 'instances', 'settings'];
+  var THEMES = ['light', 'dark'];
+  var MAX_UNITS_FILE_BYTES = 25 * 1024 * 1024;
   var CACHE_TTL_MS = 60 * 1000;
   var CRM_HOME = 'https://crm.vucasolution.com.br/';
   var CRM_LIST_URL = 'https://crm.vucasolution.com.br/pg_chamados.php';
@@ -18,10 +23,6 @@
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>',
     refresh:
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>',
-    moon:
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>',
-    sun:
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>',
     close:
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
     external:
@@ -35,23 +36,51 @@
     lock:
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
     alert:
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>'
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>',
+    building:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 21V3h11v18"/><path d="M15 9h5v12"/><path d="M2 21h20"/><path d="M8 7h3"/><path d="M8 11h3"/><path d="M8 15h3"/></svg>',
+    settings:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
+    upload:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M3 15v6h18v-6"/></svg>',
+    file:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M14 2H5v20h14V7z"/><path d="M14 2v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>'
   };
 
+  var THEME_LABELS = { light: 'Claro', dark: 'Escuro' };
+
+  function themeOption(value) {
+    return (
+      '<label class="vc-segment">' +
+      '<input type="radio" name="vc-theme" value="' + value + '" data-ref="theme-' + value + '" />' +
+      '<span>' + THEME_LABELS[value] + '</span>' +
+      '</label>'
+    );
+  }
+
+  function railTab(view, icon, label) {
+    return (
+      '<button class="vc-rail-btn" id="vc-tab-' + view + '" data-view="' + view + '" type="button" role="tab" ' +
+      'aria-controls="vc-view-' + view + '" aria-selected="false" tabindex="-1" aria-label="' + label + '" title="' + label + '">' +
+      ICONS[icon] +
+      '</button>'
+    );
+  }
+
   var TEMPLATE =
-    '<div class="vc-panel" role="complementary" aria-label="Chamados do contato">' +
-    '  <header class="vc-header">' +
-    '    <div class="vc-brand">' +
-    '      <span class="vc-brand-icon" aria-hidden="true">' + ICONS.ticket + '</span>' +
-    '      <div class="vc-brand-text"><h1>Chamados</h1><p>CRM Vuca</p></div>' +
+    '<div class="vc-panel" role="complementary" aria-label="Vuca Chamados">' +
+    '  <nav class="vc-rail" aria-label="Seções">' +
+    '    <div class="vc-rail-tabs" role="tablist" aria-orientation="vertical">' +
+    railTab('tickets', 'ticket', 'Chamados') +
+    railTab('instances', 'building', 'Instâncias') +
+    railTab('settings', 'settings', 'Configurações') +
     '    </div>' +
-    '    <div class="vc-header-actions">' +
-    '      <button class="vc-icon-btn" data-action="theme" type="button" aria-label="Alternar tema" title="Alternar tema">' + ICONS.moon + '</button>' +
-    '      <button class="vc-icon-btn" data-action="close" type="button" aria-label="Fechar painel" title="Fechar painel">' + ICONS.close + '</button>' +
-    '    </div>' +
-    '  </header>' +
-    '  <div class="vc-body">' +
-    '    <section class="vc-contact" aria-label="Contato atual">' +
+    '    <button class="vc-rail-btn vc-rail-close" data-action="close" type="button" aria-label="Recolher painel" title="Recolher painel">' + ICONS.close + '</button>' +
+    '  </nav>' +
+    '  <div class="vc-views">' +
+    /* Chamados */
+    '  <section class="vc-view" id="vc-view-tickets" data-view-panel="tickets" role="tabpanel" aria-labelledby="vc-tab-tickets">' +
+    '    <div class="vc-contact" aria-label="Contato atual">' +
     '      <div class="vc-contact-main">' +
     '        <div class="vc-avatar" data-ref="avatar">?</div>' +
     '        <div class="vc-contact-copy">' +
@@ -59,23 +88,53 @@
     '          <p class="vc-contact-hint" data-ref="contactHint">Abra uma conversa ou informe uma instância.</p>' +
     '        </div>' +
     '      </div>' +
-    '      <label class="vc-field" for="vc-instance">' +
-    '        <span class="vc-field-label">Instância</span>' +
-    '        <input id="vc-instance" data-ref="instance" class="vc-input" type="text" autocomplete="off" spellcheck="false" placeholder="Ex.: universopark" />' +
-    '      </label>' +
-    '      <button class="vc-search-btn" data-action="search" type="button">' +
-    '        <span class="vc-search-icon" aria-hidden="true">' + ICONS.refresh + '</span>' +
-    '        <span data-ref="searchLabel">Buscar chamados</span>' +
-    '      </button>' +
+    '      <div class="vc-field">' +
+    '        <label class="vc-field-label" for="vc-instance">Instância</label>' +
+    '        <div class="vc-input-row">' +
+    '          <input id="vc-instance" data-ref="instance" class="vc-input" type="text" autocomplete="off" spellcheck="false" placeholder="Ex.: universopark" />' +
+    '          <button class="vc-search-btn" data-action="search" type="button" title="Buscar chamados">' +
+    '            <span class="vc-search-icon" aria-hidden="true">' + ICONS.refresh + '</span>' +
+    '            <span data-ref="searchLabel">Buscar</span>' +
+    '          </button>' +
+    '        </div>' +
+    '      </div>' +
     '      <p class="vc-meta" data-ref="meta" role="status" aria-live="polite"></p>' +
-    '    </section>' +
+    '    </div>' +
     '    <div class="vc-list" data-ref="list" aria-live="polite"></div>' +
+    '  </section>' +
+    /* Instâncias */
+    '  <section class="vc-view" id="vc-view-instances" data-view-panel="instances" role="tabpanel" aria-labelledby="vc-tab-instances" hidden>' +
+    '    <div class="vc-contact" data-ref="unitSearchBar" hidden>' +
+    '      <div class="vc-field">' +
+    '        <label class="vc-field-label" for="vc-unit-search">Buscar unidade</label>' +
+    '        <input id="vc-unit-search" data-ref="unitSearch" class="vc-input" type="search" autocomplete="off" spellcheck="false" placeholder="Nome da unidade ou instância" />' +
+    '      </div>' +
+    '      <p class="vc-meta" data-ref="unitMeta" role="status" aria-live="polite"></p>' +
+    '    </div>' +
+    '    <div class="vc-list" data-ref="instancesBody"></div>' +
+    '  </section>' +
+    /* Configurações */
+    '  <section class="vc-view" id="vc-view-settings" data-view-panel="settings" role="tabpanel" aria-labelledby="vc-tab-settings" hidden>' +
+    '    <div class="vc-view-head"><h2 class="vc-view-title">Configurações</h2></div>' +
+    '    <div class="vc-scroll">' +
+    '      <fieldset class="vc-group">' +
+    '        <legend class="vc-group-title">Tema</legend>' +
+    '        <div class="vc-segments">' + themeOption('light') + themeOption('dark') + '</div>' +
+    '      </fieldset>' +
+    '      <div class="vc-group">' +
+    '        <h3 class="vc-group-title" id="vc-units-title">Base de unidades</h3>' +
+    '        <p class="vc-group-text">Arquivo HTML com todas as unidades do Vuca. Ele fica salvo só neste navegador e alimenta a verificação de instâncias.</p>' +
+    '        <div class="vc-db" data-ref="dbCard"></div>' +
+    '        <input class="vc-file-input" id="vc-units-file" data-ref="unitsFile" type="file" accept=".html,.htm,text/html" aria-labelledby="vc-units-title" />' +
+    '        <div class="vc-db-actions">' +
+    '          <label class="vc-btn vc-btn--primary" for="vc-units-file" data-ref="unitsPick">' + ICONS.upload + '<span data-ref="unitsPickLabel">Enviar arquivo HTML</span></label>' +
+    '          <button class="vc-btn" data-action="clear-units" data-ref="unitsClear" type="button" hidden>Remover base</button>' +
+    '        </div>' +
+    '        <p class="vc-field-error" data-ref="unitsError" role="alert"></p>' +
+    '      </div>' +
+    '    </div>' +
+    '  </section>' +
     '  </div>' +
-    '  <footer class="vc-footer">' +
-    '    <a class="vc-crm-link" data-ref="crmLink" href="https://crm.vucasolution.com.br/" target="_blank" rel="noopener noreferrer">' +
-    '      <span>Abrir CRM</span>' + ICONS.external +
-    '    </a>' +
-    '  </footer>' +
     '</div>' +
     '<button class="vc-tab" data-action="open" type="button" aria-label="Abrir chamados" title="Abrir chamados">' +
     '  <span class="vc-tab-icon" aria-hidden="true">' + ICONS.ticket + '</span>' +
@@ -122,15 +181,30 @@
     searchLabel: app.querySelector('[data-ref="searchLabel"]'),
     meta: app.querySelector('[data-ref="meta"]'),
     list: app.querySelector('[data-ref="list"]'),
-    crmLink: app.querySelector('[data-ref="crmLink"]'),
-    themeBtn: app.querySelector('[data-action="theme"]'),
     closeBtn: app.querySelector('[data-action="close"]'),
-    openBtn: app.querySelector('[data-action="open"]')
+    openBtn: app.querySelector('[data-action="open"]'),
+    railTabs: Array.prototype.slice.call(app.querySelectorAll('.vc-rail-btn[data-view]')),
+    viewPanels: Array.prototype.slice.call(app.querySelectorAll('[data-view-panel]')),
+    themeInputs: Array.prototype.slice.call(app.querySelectorAll('input[name="vc-theme"]')),
+    instancesBody: app.querySelector('[data-ref="instancesBody"]'),
+    unitSearchBar: app.querySelector('[data-ref="unitSearchBar"]'),
+    unitSearch: app.querySelector('[data-ref="unitSearch"]'),
+    unitMeta: app.querySelector('[data-ref="unitMeta"]'),
+    dbCard: app.querySelector('[data-ref="dbCard"]'),
+    unitsFile: app.querySelector('[data-ref="unitsFile"]'),
+    unitsPickLabel: app.querySelector('[data-ref="unitsPickLabel"]'),
+    unitsClear: app.querySelector('[data-ref="unitsClear"]'),
+    unitsError: app.querySelector('[data-ref="unitsError"]')
   };
 
   var state = {
     open: true,
     theme: 'light',
+    themePref: 'light',
+    view: 'tickets',
+    units: null,
+    unitsIndex: null,
+    unitsBusy: false,
     contactName: '',
     detectedName: '',
     instance: '',
@@ -198,31 +272,57 @@
     }
   }
 
-  function applyTheme(theme, persist) {
-    state.theme = theme === 'dark' ? 'dark' : 'light';
-    app.dataset.theme = state.theme;
+  function pageIsDark() {
+    var root = document.documentElement;
+    if (root.classList.contains('dark')) return true;
+    var attr = root.getAttribute('data-theme') || (document.body && document.body.getAttribute('data-theme')) || '';
+    return /dark/i.test(attr);
+  }
 
-    var dark = state.theme === 'dark';
-    refs.themeBtn.innerHTML = dark ? ICONS.sun : ICONS.moon;
-    var label = dark ? 'Mudar para tema claro' : 'Mudar para tema escuro';
-    refs.themeBtn.setAttribute('aria-label', label);
-    refs.themeBtn.setAttribute('title', label);
+  function applyThemePref(pref, persist) {
+    state.themePref = THEMES.indexOf(pref) !== -1 ? pref : 'light';
+    state.theme = state.themePref;
+    app.dataset.theme = state.theme;
+    for (var i = 0; i < refs.themeInputs.length; i++) {
+      refs.themeInputs[i].checked = refs.themeInputs[i].value === state.themePref;
+    }
 
     if (persist) {
       var values = {};
-      values[STORAGE_THEME] = state.theme;
+      values[STORAGE_THEME] = state.themePref;
       storeSet(values);
     }
   }
 
   function initTheme() {
-    var pageDark = document.documentElement.classList.contains('dark');
-    applyTheme(pageDark ? 'dark' : 'light', false);
+    /* Sem escolha salva (ou com o antigo "auto"), parte do modo atual do Sendi. */
+    applyThemePref(pageIsDark() ? 'dark' : 'light', false);
     storeGet([STORAGE_THEME], function (data) {
-      if (data[STORAGE_THEME] === 'dark' || data[STORAGE_THEME] === 'light') {
-        applyTheme(data[STORAGE_THEME], false);
-      }
+      if (THEMES.indexOf(data[STORAGE_THEME]) !== -1) applyThemePref(data[STORAGE_THEME], false);
     });
+  }
+
+  function setView(view, persist, focusTab) {
+    state.view = VIEWS.indexOf(view) !== -1 ? view : 'tickets';
+
+    for (var i = 0; i < refs.railTabs.length; i++) {
+      var tab = refs.railTabs[i];
+      var active = tab.dataset.view === state.view;
+      tab.setAttribute('aria-selected', active ? 'true' : 'false');
+      tab.tabIndex = active ? 0 : -1;
+      if (active && focusTab) tab.focus();
+    }
+    for (var j = 0; j < refs.viewPanels.length; j++) {
+      refs.viewPanels[j].hidden = refs.viewPanels[j].dataset.viewPanel !== state.view;
+    }
+
+    if (state.view === 'instances') renderInstances();
+
+    if (persist) {
+      var values = {};
+      values[STORAGE_VIEW] = state.view;
+      storeSet(values);
+    }
   }
 
   function setOpen(open, persist) {
@@ -245,18 +345,11 @@
     }
   }
 
-  function updateCrmLink() {
-    var instance = clean(refs.instance.value);
-    refs.crmLink.href = instance
-      ? CRM_LIST_URL + '?instancia=' + encodeURIComponent(instance)
-      : CRM_HOME;
-  }
-
   function updateSearchState() {
     var hasInstance = clean(refs.instance.value) !== '';
     refs.searchBtn.disabled = state.loading || !hasInstance;
     refs.searchBtn.classList.toggle('vc-loading', state.loading);
-    refs.searchLabel.textContent = state.loading ? 'Buscando...' : 'Buscar chamados';
+    refs.searchLabel.textContent = state.loading ? 'Buscando' : 'Buscar';
   }
 
   function updateMeta(text) {
@@ -374,7 +467,6 @@
     }
 
     updateSearchState();
-    updateCrmLink();
 
     if (name && instance) {
       if (previousInstance !== instance) {
@@ -594,7 +686,7 @@
           icon: 'alert',
           title: 'Instância não identificada',
           description:
-            "O nome do contato não contém uma instância no formato 'Nome - instância'. Informe a instância abaixo e toque em Buscar chamados."
+            "O nome do contato não contém uma instância no formato 'Nome - instância'. Informe a instância acima e toque em Buscar."
         })
       );
       updateMeta('Informe a instância para buscar.');
@@ -618,7 +710,7 @@
         icon: 'lock',
         title: 'Acesso ao CRM',
         description:
-          'Entre no CRM Vuca para consultar os chamados desta unidade. Depois, toque em Buscar chamados.',
+          'Entre no CRM Vuca para consultar os chamados desta unidade. Depois, toque em Tentar novamente.',
         actions: [
           { label: 'Abrir CRM', href: crmUrlFor(current) },
           { label: 'Tentar novamente', onClick: function () { fetchTickets(clean(refs.instance.value) || instance, true); } }
@@ -733,8 +825,6 @@
         state.lastUpdated = new Date(entry.ts);
         state.lastAutoInstance = value;
         renderTickets(tickets, value, state.lastUpdated);
-
-        if (manual) updateCrmLink();
       });
     } catch (err) {
       state.loading = false;
@@ -742,6 +832,353 @@
       updateSearchState();
       showError('Não foi possível falar com a extensão. Recarregue a página e tente novamente.');
     }
+  }
+
+  /* ---------- Base de unidades ---------- */
+
+  function formatDateTime(ts) {
+    try {
+      return new Date(ts).toLocaleString('pt-BR', {
+        day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
+    } catch (err) {
+      return '';
+    }
+  }
+
+  function formatBytes(bytes) {
+    if (!bytes && bytes !== 0) return '';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1).replace('.', ',') + ' MB';
+  }
+
+  function formatUnits(count) {
+    return count === 1 ? '1 unidade' : count.toLocaleString('pt-BR') + ' unidades';
+  }
+
+  function setUnitsError(text) {
+    refs.unitsError.textContent = text || '';
+  }
+
+  function dbRow(label, value) {
+    var row = document.createElement('div');
+    row.className = 'vc-db-row';
+    var dt = document.createElement('dt');
+    dt.textContent = label;
+    var dd = document.createElement('dd');
+    dd.textContent = value;
+    dd.title = value;
+    row.appendChild(dt);
+    row.appendChild(dd);
+    return row;
+  }
+
+  function renderUnitsDb() {
+    var db = state.units;
+    refs.dbCard.replaceChildren();
+    refs.dbCard.classList.toggle('vc-db--empty', !db);
+    refs.unitsClear.hidden = !db;
+    refs.unitsPickLabel.textContent = state.unitsBusy
+      ? 'Lendo arquivo'
+      : db ? 'Substituir arquivo' : 'Enviar arquivo HTML';
+
+    if (!db) {
+      refs.dbCard.appendChild(iconElement('file', 'vc-db-icon'));
+      var empty = document.createElement('p');
+      empty.className = 'vc-db-empty';
+      empty.textContent = 'Nenhuma base importada.';
+      refs.dbCard.appendChild(empty);
+      return;
+    }
+
+    var list = document.createElement('dl');
+    list.className = 'vc-db-list';
+    list.appendChild(dbRow('Arquivo', db.fileName + (db.size ? ' · ' + formatBytes(db.size) : '')));
+    list.appendChild(dbRow('Unidades', formatUnits(db.rows.length)));
+    if (db.headers && db.headers.length) list.appendChild(dbRow('Colunas', db.headers.filter(Boolean).join(', ')));
+    list.appendChild(dbRow('Importada', formatDateTime(db.importedAt)));
+    refs.dbCard.appendChild(list);
+  }
+
+  function cellAt(row, index) {
+    return index >= 0 && row[index] != null ? clean(row[index]) : '';
+  }
+
+  /* Agrupa as linhas da base por instância, em ordem alfabética. */
+  function buildUnitsIndex(db) {
+    var cols = parser.unitColumns(db.headers);
+    var instanceCol = cols.instanceColumn;
+    var nameCol = cols.nameColumn;
+    if (instanceCol === -1 && typeof db.instanceColumn === 'number') instanceCol = db.instanceColumn;
+    if (nameCol === -1 && typeof db.nameColumn === 'number') nameCol = db.nameColumn;
+
+    var groups = new Map();
+    for (var i = 0; i < db.rows.length; i++) {
+      var row = db.rows[i];
+      var instance = cellAt(row, instanceCol) || 'Sem instância';
+      var unit = {
+        id: cellAt(row, cols.idColumn),
+        name: cellAt(row, nameCol) || 'Unidade sem nome'
+      };
+      unit.key = parser.normalize(unit.name);
+
+      var key = parser.normalize(instance);
+      var group = groups.get(key);
+      if (!group) {
+        group = { instance: instance, key: key, units: [] };
+        groups.set(key, group);
+      }
+      group.units.push(unit);
+    }
+
+    var list = Array.from(groups.values());
+    list.sort(function (a, b) { return a.key < b.key ? -1 : a.key > b.key ? 1 : 0; });
+    for (var g = 0; g < list.length; g++) {
+      list[g].units.sort(function (a, b) { return a.key < b.key ? -1 : a.key > b.key ? 1 : 0; });
+    }
+    return { importedAt: db.importedAt, groups: list, total: db.rows.length };
+  }
+
+  function getUnitsIndex() {
+    var db = state.units;
+    if (!db) return null;
+    if (!state.unitsIndex || state.unitsIndex.importedAt !== db.importedAt) {
+      state.unitsIndex = buildUnitsIndex(db);
+    }
+    return state.unitsIndex;
+  }
+
+  function buildInstanceCard(group, units) {
+    var article = document.createElement('article');
+    article.className = 'vc-ticket vc-unit-card';
+
+    var top = document.createElement('div');
+    top.className = 'vc-ticket-top';
+    var name = document.createElement('p');
+    name.className = 'vc-unit-instance';
+    name.textContent = group.instance;
+    name.title = group.instance;
+    var count = document.createElement('span');
+    count.className = 'vc-unit-count';
+    count.textContent = formatUnits(units.length);
+    top.appendChild(name);
+    top.appendChild(count);
+    article.appendChild(top);
+
+    var list = document.createElement('ul');
+    list.className = 'vc-unit-list';
+    for (var i = 0; i < units.length; i++) {
+      var item = document.createElement('li');
+      item.className = 'vc-unit-item';
+      var label = document.createElement('span');
+      label.className = 'vc-unit-name';
+      label.textContent = units[i].name;
+      label.title = units[i].name;
+      item.appendChild(label);
+      if (units[i].id) {
+        var id = document.createElement('span');
+        id.className = 'vc-unit-id';
+        id.textContent = '#' + units[i].id;
+        item.appendChild(id);
+      }
+      list.appendChild(item);
+    }
+    article.appendChild(list);
+    return article;
+  }
+
+  /*
+   * A base completa tem mais de mil unidades: os cards são montados em lotes
+   * conforme a lista rola, para a busca responder sem travar o Sendi.
+   */
+  var UNIT_BATCH = 60;
+  var unitPaging = { matches: [], shown: 0, sentinel: null, observer: null };
+
+  function appendInstanceBatch() {
+    var end = Math.min(unitPaging.shown + UNIT_BATCH, unitPaging.matches.length);
+    if (end <= unitPaging.shown) return;
+
+    var fragment = document.createDocumentFragment();
+    for (var i = unitPaging.shown; i < end; i++) {
+      fragment.appendChild(buildInstanceCard(unitPaging.matches[i].group, unitPaging.matches[i].units));
+    }
+    unitPaging.shown = end;
+
+    if (unitPaging.sentinel) unitPaging.sentinel.remove();
+    refs.instancesBody.appendChild(fragment);
+
+    if (unitPaging.shown < unitPaging.matches.length) {
+      if (!unitPaging.sentinel) {
+        unitPaging.sentinel = document.createElement('div');
+        unitPaging.sentinel.className = 'vc-sentinel';
+        unitPaging.sentinel.setAttribute('aria-hidden', 'true');
+      }
+      refs.instancesBody.appendChild(unitPaging.sentinel);
+      if (!unitPaging.observer) {
+        unitPaging.observer = new IntersectionObserver(function (entries) {
+          if (entries[0] && entries[0].isIntersecting) appendInstanceBatch();
+        }, { root: refs.instancesBody, rootMargin: '600px 0px' });
+      }
+      unitPaging.observer.observe(unitPaging.sentinel);
+    }
+  }
+
+  function renderInstanceList() {
+    var index = getUnitsIndex();
+    if (!index) return;
+
+    var query = parser.normalize(refs.unitSearch.value);
+    var matches = [];
+    var instances = 0;
+    var units = 0;
+
+    for (var g = 0; g < index.groups.length; g++) {
+      var group = index.groups[g];
+      var matched = group.units;
+      if (query && group.key.indexOf(query) === -1) {
+        matched = group.units.filter(function (unit) { return unit.key.indexOf(query) !== -1; });
+      }
+      if (!matched.length) continue;
+      instances += 1;
+      units += matched.length;
+      matches.push({ group: group, units: matched });
+    }
+
+    if (unitPaging.observer) unitPaging.observer.disconnect();
+    unitPaging.matches = matches;
+    unitPaging.shown = 0;
+    refs.instancesBody.replaceChildren();
+    refs.instancesBody.scrollTop = 0;
+
+    if (!instances) {
+      refs.instancesBody.appendChild(
+        buildState({
+          icon: 'building',
+          title: 'Nenhuma unidade encontrada',
+          description: 'Nada na base corresponde a "' + clean(refs.unitSearch.value) + '".'
+        })
+      );
+      refs.unitMeta.textContent = 'Nenhum resultado.';
+      return;
+    }
+
+    appendInstanceBatch();
+    refs.unitMeta.textContent =
+      (instances === 1 ? '1 instância' : instances.toLocaleString('pt-BR') + ' instâncias') +
+      ' · ' + formatUnits(units) +
+      (query ? ' de ' + index.total.toLocaleString('pt-BR') : '');
+  }
+
+  function renderInstances() {
+    var db = state.units;
+    refs.unitSearchBar.hidden = !db;
+
+    if (!db) {
+      state.unitsIndex = null;
+      refs.unitSearch.value = '';
+      refs.instancesBody.replaceChildren(
+        buildState({
+          icon: 'building',
+          title: 'Base de unidades não importada',
+          description: 'Envie o arquivo HTML com as unidades do Vuca em Configurações para listar as instâncias.',
+          actions: [{ label: 'Abrir configurações', onClick: function () { setView('settings', true, true); } }]
+        })
+      );
+      return;
+    }
+
+    renderInstanceList();
+  }
+
+  function loadUnitsDb() {
+    storeGet([STORAGE_UNITS], function (data) {
+      var db = data[STORAGE_UNITS];
+      state.units = db && Array.isArray(db.rows) ? db : null;
+      renderUnitsDb();
+      if (state.view === 'instances') renderInstances();
+    });
+  }
+
+  function importUnitsFile(file) {
+    setUnitsError('');
+    if (!file) return;
+
+    if (!/\.html?$/i.test(file.name) && file.type !== 'text/html') {
+      setUnitsError('Escolha um arquivo .html ou .htm.');
+      return;
+    }
+    if (file.size > MAX_UNITS_FILE_BYTES) {
+      setUnitsError('O arquivo passa de 25 MB.');
+      return;
+    }
+
+    state.unitsBusy = true;
+    renderUnitsDb();
+
+    var reader = new FileReader();
+    reader.onerror = function () {
+      state.unitsBusy = false;
+      renderUnitsDb();
+      setUnitsError('Não foi possível ler o arquivo.');
+    };
+    reader.onload = function () {
+      var parsed;
+      try {
+        parsed = parser.parseUnits(String(reader.result || ''));
+      } catch (err) {
+        parsed = null;
+      }
+
+      state.unitsBusy = false;
+      if (!parsed || !parsed.rows.length) {
+        renderUnitsDb();
+        setUnitsError('Nenhuma tabela de unidades encontrada no arquivo.');
+        return;
+      }
+
+      var db = {
+        version: 1,
+        fileName: file.name,
+        size: file.size,
+        importedAt: Date.now(),
+        headers: parsed.headers,
+        rows: parsed.rows,
+        instanceColumn: parsed.instanceColumn,
+        nameColumn: parsed.nameColumn
+      };
+
+      var values = {};
+      values[STORAGE_UNITS] = db;
+      try {
+        chrome.storage.local.set(values, function () {
+          if (chrome.runtime.lastError) {
+            renderUnitsDb();
+            setUnitsError('Não foi possível salvar a base: ' + chrome.runtime.lastError.message);
+            return;
+          }
+          state.units = db;
+          renderUnitsDb();
+          if (state.view === 'instances') renderInstances();
+        });
+      } catch (err) {
+        renderUnitsDb();
+        setUnitsError('Não foi possível salvar a base.');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function clearUnitsDb() {
+    setUnitsError('');
+    try {
+      chrome.storage.local.remove(STORAGE_UNITS);
+    } catch (err) {
+      /* armazenamento indisponível */
+    }
+    state.units = null;
+    renderUnitsDb();
+    if (state.view === 'instances') renderInstances();
   }
 
   var contactTimer = 0;
@@ -796,7 +1233,6 @@
     }
 
     updateSearchState();
-    updateCrmLink();
 
     if (state.loadedInstance !== next) {
       updateMeta(next ? 'Instância alterada. Busque os chamados para atualizar.' : 'Informe uma instância para buscar.');
@@ -810,10 +1246,6 @@
     }
   });
 
-  refs.themeBtn.addEventListener('click', function () {
-    applyTheme(state.theme === 'dark' ? 'light' : 'dark', true);
-  });
-
   refs.closeBtn.addEventListener('click', function () {
     setOpen(false, true);
   });
@@ -822,11 +1254,50 @@
     setOpen(true, true);
   });
 
+  for (var t = 0; t < refs.railTabs.length; t++) {
+    refs.railTabs[t].addEventListener('click', function (event) {
+      setView(event.currentTarget.dataset.view, true, false);
+    });
+    refs.railTabs[t].addEventListener('keydown', function (event) {
+      var index = VIEWS.indexOf(event.currentTarget.dataset.view);
+      var next = -1;
+      if (event.key === 'ArrowDown' || event.key === 'ArrowRight') next = (index + 1) % VIEWS.length;
+      else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') next = (index - 1 + VIEWS.length) % VIEWS.length;
+      else if (event.key === 'Home') next = 0;
+      else if (event.key === 'End') next = VIEWS.length - 1;
+      if (next === -1) return;
+      event.preventDefault();
+      setView(VIEWS[next], true, true);
+    });
+  }
+
+  for (var r = 0; r < refs.themeInputs.length; r++) {
+    refs.themeInputs[r].addEventListener('change', function (event) {
+      if (event.currentTarget.checked) applyThemePref(event.currentTarget.value, true);
+    });
+  }
+
+  refs.unitsFile.addEventListener('change', function () {
+    var file = refs.unitsFile.files && refs.unitsFile.files[0];
+    importUnitsFile(file);
+    refs.unitsFile.value = '';
+  });
+
+  refs.unitsClear.addEventListener('click', clearUnitsDb);
+
+  var unitSearchTimer = 0;
+  refs.unitSearch.addEventListener('input', function () {
+    window.clearTimeout(unitSearchTimer);
+    unitSearchTimer = window.setTimeout(renderInstanceList, 120);
+  });
+
   initTheme();
   setOpen(true, false);
-  updateCrmLink();
+  setView('tickets', false, false);
+  loadUnitsDb();
 
-  storeGet([STORAGE_OPEN], function (data) {
+  storeGet([STORAGE_OPEN, STORAGE_VIEW], function (data) {
+    if (typeof data[STORAGE_VIEW] === 'string') setView(data[STORAGE_VIEW], false, false);
     if (typeof data[STORAGE_OPEN] === 'boolean') setOpen(data[STORAGE_OPEN], false);
     start();
   });

@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Sidebar de chamados do CRM Vuca integrada ao Sendi.",
   "minimum_chrome_version": "111",
-  "permissions": ["storage", "scripting"],
+  "permissions": ["storage", "unlimitedStorage", "scripting"],
   "host_permissions": [
     "https://suportevuca.sendi.chat/*",
     "https://crm.vucasolution.com.br/*"

@@ -295,6 +295,68 @@
     };
   }
 
+  var UNIT_INSTANCE_ALIASES = ['vuca name', 'instancia', 'instance', 'subdominio', 'dominio', 'slug', 'banco', 'database'];
+  var UNIT_NAME_ALIASES = ['titulo', 'unidade', 'nome', 'nome fantasia', 'razao social', 'loja', 'cliente', 'empresa'];
+  var UNIT_ID_ALIASES = ['id', 'codigo', 'cod'];
+
+  /* Índices das colunas de instância, nome e ID da unidade (-1 quando não reconhecidas). */
+  function unitColumns(headers) {
+    var list = headers || [];
+    return {
+      instanceColumn: findColumn(list, UNIT_INSTANCE_ALIASES),
+      nameColumn: findColumn(list, UNIT_NAME_ALIASES),
+      idColumn: findColumn(list, UNIT_ID_ALIASES)
+    };
+  }
+
+  /*
+   * Lê o arquivo HTML exportado com as unidades do Vuca.
+   * Usa a maior tabela do documento, guarda os cabeçalhos e o texto de cada linha
+   * e aponta (quando reconhece) as colunas de instância e de nome da unidade.
+   */
+  function parseUnits(html, options) {
+    var ParserCtor = (options && options.DOMParser) || (typeof DOMParser !== 'undefined' ? DOMParser : null);
+    if (!ParserCtor) throw new Error('DOMParser unavailable');
+
+    var doc = new ParserCtor().parseFromString(html || '', 'text/html');
+    var tables = Array.prototype.slice.call(doc.querySelectorAll('table'));
+    var best = null;
+    var bestRows = [];
+
+    for (var i = 0; i < tables.length; i++) {
+      var rows = dataRows(tables[i]);
+      if (rows.length > bestRows.length) {
+        best = tables[i];
+        bestRows = rows;
+      }
+    }
+
+    if (!best) return { headers: [], rows: [], instanceColumn: -1, nameColumn: -1, idColumn: -1 };
+
+    var headers = headerLabels(best);
+    var out = [];
+    for (var r = 0; r < bestRows.length; r++) {
+      var cells = expandedCells(bestRows[r]);
+      var values = [];
+      var filled = false;
+      for (var c = 0; c < cells.length; c++) {
+        var text = cellText(cells[c]);
+        if (text) filled = true;
+        values.push(text);
+      }
+      if (filled) out.push(values);
+    }
+
+    var columns = unitColumns(headers);
+    return {
+      headers: headers,
+      rows: out,
+      instanceColumn: columns.instanceColumn,
+      nameColumn: columns.nameColumn,
+      idColumn: columns.idColumn
+    };
+  }
+
   return {
     CRM_ORIGIN: CRM_ORIGIN,
     clean: clean,
@@ -302,6 +364,8 @@
     extractInstance: extractInstance,
     isVisible: isVisible,
     parseTickets: parseTickets,
+    parseUnits: parseUnits,
+    unitColumns: unitColumns,
     inspectPage: inspectPage
   };
 });

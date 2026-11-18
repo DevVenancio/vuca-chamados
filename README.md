@@ -11,7 +11,9 @@ A extensão identifica a instância da unidade no nome do contato da conversa, c
 - Busca automática ao trocar de conversa, com cache de 60 segundos.
 - Botão para atualizar a listagem manualmente.
 - Campo de instância editável, para contatos sem o formato esperado.
-- Tema claro e escuro, com preferência salva localmente.
+- Visual baseado no Min Theme, com tema claro ou escuro (na primeira abertura, segue o modo atual do Sendi).
+- Navegação lateral com três abas: **Chamados**, **Instâncias** e **Configurações**.
+- Importação de um arquivo HTML com todas as unidades do Vuca, usado como base da verificação de instâncias.
 - Painel recolhível para uma aba lateral.
 - Links dos chamados abrem diretamente no CRM.
 - Ícone da extensão abre ou foca a aba do Sendi.
@@ -46,10 +48,11 @@ Cada chamado exibe:
 1. Abra uma conversa no Sendi.
 2. A extensão lê o nome do contato e preenche o campo **Instância**.
 3. Se o painel estiver aberto, a busca é feita automaticamente.
-4. Use **Buscar chamados** para forçar uma atualização.
+4. Use **Buscar** para forçar uma atualização.
 5. Clique no número do chamado para abri-lo no CRM.
-6. Use o botão de tema para alternar entre claro e escuro.
-7. Use o botão de fechar para recolher a sidebar; a aba **Chamados** permite reabri-la.
+6. Em **Configurações**, escolha o tema (Claro ou Escuro) e envie o arquivo HTML com as unidades do Vuca.
+7. A aba **Instâncias** lista as instâncias da base importada, cada uma com suas unidades. O campo **Buscar unidade** filtra pelo nome da unidade ou da instância (sem diferenciar acentos e maiúsculas).
+8. Use o botão de fechar, no fim da barra lateral, para recolher a sidebar; a aba **Chamados** permite reabri-la.
 
 ### Formato da instância
 
@@ -62,7 +65,7 @@ A instância é a segunda parte do nome do contato, separada por hífen:
 | `Gabriella - Universo Park - 2` | `Universo Park` |
 | `Gabriella` | Não identificada |
 
-Se a instância não for identificada, preencha o campo manualmente e clique em **Buscar chamados**.
+Se a instância não for identificada, preencha o campo manualmente e clique em **Buscar**.
 
 ## Como funciona
 
@@ -83,7 +86,7 @@ A extensão não solicita nem armazena usuário e senha. Ela reutiliza a sessão
 
 Se aparecer a mensagem de acesso ao CRM ou de verificação do Cloudflare:
 
-1. Abra o CRM pelo botão **Abrir CRM**.
+1. Abra o CRM pelo botão **Abrir CRM** exibido no aviso.
 2. Faça login, se necessário.
 3. Conclua a verificação do Cloudflare, se aparecer.
 4. Mantenha a aba do CRM aberta.
@@ -93,7 +96,8 @@ Se aparecer a mensagem de acesso ao CRM ou de verificação do Cloudflare:
 
 | Permissão | Motivo |
 | --- | --- |
-| `storage` | Salvar o tema e o estado aberto/fechado do painel. |
+| `storage` | Salvar o tema, a aba ativa, o estado aberto/fechado do painel e a base de unidades. |
+| `unlimitedStorage` | Permitir bases de unidades maiores que a cota padrão de 10 MB. |
 | `scripting` | Executar a busca de fallback dentro de uma aba autenticada do CRM. |
 | `https://suportevuca.sendi.chat/*` | Ler o contato atual e injetar a sidebar. |
 | `https://crm.vucasolution.com.br/*` | Consultar a listagem de chamados do CRM. |
@@ -106,7 +110,7 @@ A extensão não envia dados para serviços de terceiros e não possui analytics
 vuca-chamados/
 ├── manifest.json     # Configuração da extensão MV3
 ├── background.js     # Busca no CRM e fallback pela aba autenticada
-├── parser.js         # Extração da instância e leitura da tabela do CRM
+├── parser.js         # Extração da instância, tabela do CRM e base de unidades
 ├── content.js        # Sidebar, detecção do contato e renderização
 ├── sidebar.css       # Estilos dos temas claro e escuro
 └── icons/            # Ícones da extensão
@@ -140,6 +144,16 @@ Validação do manifesto:
 python3 -m json.tool manifest.json
 ```
 
+### Base de unidades
+
+Em **Configurações › Base de unidades**, envie um arquivo `.html`/`.htm` (até 25 MB). O `parser.parseUnits` usa a maior tabela do documento e salva em `chrome.storage.local` (chave `vcUnitsDb`):
+
+- `headers`: cabeçalhos da tabela;
+- `rows`: texto de cada célula, por linha;
+- `instanceColumn` / `nameColumn` / `idColumn`: índice das colunas de instância, nome e ID da unidade (`-1` se não reconhecidas).
+
+No export do Vuca Solution Administration, a instância é a coluna **Vuca Name** e o nome da unidade é **Título**. Outros nomes de coluna reconhecidos estão em `UNIT_INSTANCE_ALIASES` e `UNIT_NAME_ALIASES` no `parser.js`. A listagem é montada em lotes de 60 instâncias conforme a lista rola.
+
 ### Pontos de manutenção
 
 - Se o CRM alterar os cabeçalhos da tabela, ajuste os aliases em `COLUMN_ALIASES` no `parser.js`.
@@ -167,7 +181,7 @@ python3 -m json.tool manifest.json
 
 - Confirme se o nome do contato segue o formato `Nome - instancia`.
 - Preencha o campo **Instância** manualmente.
-- Clique em **Buscar chamados**.
+- Clique em **Buscar**.
 
 ### A mensagem de login aparece
 
@@ -186,4 +200,4 @@ python3 -m json.tool manifest.json
 
 - Confirme se a instância preenchida corresponde à instância cadastrada no CRM.
 - Verifique se existem chamados para essa unidade.
-- Tente atualizar a listagem pelo botão **Buscar chamados**.
+- Tente atualizar a listagem pelo botão **Buscar**.
