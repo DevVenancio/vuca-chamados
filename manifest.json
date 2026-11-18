@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Vuca Chamados",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Sidebar de chamados do CRM Vuca integrada ao Sendi.",
   "minimum_chrome_version": "111",
   "permissions": ["storage", "unlimitedStorage", "scripting"],
